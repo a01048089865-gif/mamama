@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ᛗᚨᛒᛖᛟᛒᛊᛟᚾᛃᛖᛟᚢᛁ ᚷᛃᛖᛟᛚᚷᛃᛖ ᛁᛚᚷᛁ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+Runic&family=Song+Myung&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --void: #0b0710;
+    --void2: #140c1e;
+    --witch-purple: #6b2f8f;
+    --curse-magenta: #b8397a;
+    --grief-pink: #e8a3c4;
+    --soul-pink: #f4c9dc;
+    --hope-teal: #5fb4a8;
+    --despair-red: #8c1f3f;
+    --paper: #f2e9ee;
+    --line: rgba(232,163,196,0.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(107,47,143,0.35), transparent 55%),
+      radial-gradient(ellipse at 90% 10%, rgba(184,57,122,0.25), transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(140,31,63,0.3), transparent 60%),
+      var(--void);
+    font-family: 'Gowun Batang', serif;
+    color: var(--paper);
+    padding: 40px 16px 100px;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      repeating-linear-gradient(115deg, transparent 0 60px, rgba(232,163,196,0.03) 60px 61px),
+      repeating-linear-gradient(25deg, transparent 0 80px, rgba(107,47,143,0.04) 80px 81px);
+    pointer-events:none;
+    z-index:0;
+  }
+  .crack{
+    position:fixed; pointer-events:none; z-index:0; opacity:0.5;
+    stroke:var(--curse-magenta); stroke-width:0.6; fill:none;
+  }
+  .wrap{max-width:640px;margin:0 auto;position:relative;z-index:1;}
+
+  header{ text-align:center; margin-bottom:6px; }
+  .glyph{
+    font-size:34px; letter-spacing:6px; color:var(--soul-pink);
+    text-shadow:0 0 18px rgba(232,163,196,0.6), 0 0 40px rgba(107,47,143,0.5);
+  }
+  .rune-title{
+    font-family:'Noto Sans Runic', serif;
+    font-size:26px; letter-spacing:5px; color:var(--soul-pink);
+    margin-top:10px; cursor:help;
+    text-shadow:0 0 22px rgba(184,57,122,0.55);
+  }
+  .sub{
+    font-family:'Nanum Myeongjo', serif;
+    font-size:12.5px; letter-spacing:3px; color:rgba(232,163,196,0.55);
+    text-transform:uppercase;
+  }
+  .divider{
+    display:flex; align-items:center; gap:10px; margin:22px 0 26px; opacity:0.6;
+  }
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--curse-magenta),transparent);}
+  .divider span{font-family:'Song Myung',serif; font-size:12px;letter-spacing:2px;color:var(--grief-pink);}
+
+  .composer{
+    background: linear-gradient(160deg, rgba(20,12,30,0.85), rgba(40,15,35,0.7));
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:22px 20px;
+    position:relative;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 20px 60px -20px rgba(107,47,143,0.6);
+  }
+  .composer::before{
+    content:"契約";
+    position:absolute; top:-11px; left:18px;
+    background:var(--void); padding:0 10px;
+    font-family:'Nanum Myeongjo', serif;
+    font-size:11px; color:var(--curse-magenta); letter-spacing:4px;
+  }
+  .date-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:12px; font-family:'Nanum Myeongjo',serif;
+  }
+  .date-row .today{font-size:13px;color:var(--grief-pink); letter-spacing:1px;}
+  .date-row .count{font-size:11px;color:rgba(242,233,238,0.4);}
+
+  .cat-row{ margin-bottom:14px; }
+  .cat-label{ font-family:'Nanum Myeongjo',serif; font-size:11px; letter-spacing:2px; color:rgba(232,163,196,0.5); margin-bottom:8px; }
+  .cat-chips{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .cat-chip{
+    font-family:'Nanum Myeongjo',serif; font-size:12px; letter-spacing:1px;
+    padding:6px 12px; border-radius:20px; cursor:pointer; user-select:none;
+    border:1px solid var(--line); color:rgba(242,233,238,0.7); background:rgba(11,7,16,0.4);
+    transition:all .15s ease;
+  }
+  .cat-chip.active{ color:var(--void); font-weight:700; border-color:transparent; }
+  .cat-chip .rm-cat{ margin-left:6px; opacity:0.6; }
+  .cat-chip .rm-cat:hover{ opacity:1; }
+  .cat-add{
+    display:flex; align-items:center; gap:6px;
+  }
+  .cat-add input{
+    background:rgba(11,7,16,0.5); border:1px solid var(--line); color:var(--paper);
+    font-family:'Nanum Myeongjo',serif; font-size:12px; padding:6px 10px; border-radius:20px; outline:none; width:110px;
+  }
+  .cat-add input:focus{ border-color:var(--curse-magenta); }
+  .cat-add button{
+    padding:6px 12px; font-size:12px; letter-spacing:1px;
+  }
+
+  input#entry-title{
+    width:100%; background:transparent; border:none; border-bottom:1px solid var(--line);
+    color:var(--soul-pink); font-family:'Song Myung',serif;
+    font-size:19px; padding:6px 2px 10px; outline:none; margin-bottom:12px;
+  }
+  input#entry-title::placeholder{color:rgba(232,163,196,0.35);}
+  textarea{
+    width:100%; min-height:140px; resize:vertical;
+    background:rgba(11,7,16,0.5); border:1px solid var(--line); border-radius:1px;
+    color:var(--paper); font-family:'Gowun Batang',serif; font-size:15px; line-height:1.85;
+    padding:14px; outline:none;
+  }
+  textarea::placeholder{color:rgba(242,233,238,0.3);}
+  textarea:focus, input#entry-title:focus{border-color:var(--curse-magenta);}
+
+  .image-row{ margin-top:14px; }
+  .image-picker{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Nanum Myeongjo',serif; font-size:12.5px; letter-spacing:1px;
+    color:var(--grief-pink); cursor:pointer; border:1px dashed var(--line);
+    padding:8px 14px; border-radius:1px; transition:border-color .15s ease;
+  }
+  .image-picker:hover{ border-color:var(--curse-magenta); }
+  .image-picker input{ display:none; }
+  .preview-strip{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .preview-thumb{ position:relative; width:64px; height:64px; border:1px solid var(--line); overflow:hidden; }
+  .preview-thumb img{ width:100%; height:100%; object-fit:cover; display:block; filter:saturate(0.9) contrast(1.05); }
+  .preview-thumb .rm{
+    position:absolute; top:1px; right:1px; background:rgba(11,7,16,0.75); color:var(--grief-pink);
+    border:none; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer; padding:0;
+  }
+
+  .actions{display:flex; justify-content:flex-end; margin-top:14px;}
+  button{
+    font-family:'Nanum Myeongjo',serif; letter-spacing:2px; font-size:13px;
+    background:linear-gradient(135deg, var(--witch-purple), var(--curse-magenta));
+    color:var(--paper); border:none; padding:10px 22px; cursor:pointer;
+    border-radius:1px; position:relative; overflow:hidden;
+    box-shadow:0 6px 18px -6px rgba(184,57,122,0.7);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  button:hover{transform:translateY(-1px); box-shadow:0 10px 24px -6px rgba(184,57,122,0.9);}
+  button:active{transform:translateY(0);}
+
+  .filter-bar{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+
+  .entries{margin-top:0; display:flex; flex-direction:column; gap:22px;}
+  .entry{
+    background:linear-gradient(170deg, rgba(20,12,30,0.7), rgba(11,7,16,0.75));
+    border:1px solid var(--line); border-left:2px solid var(--curse-magenta);
+    padding:18px 20px 16px; position:relative;
+  }
+  .entry .meta{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Nanum Myeongjo',serif; font-size:11px; color:rgba(232,163,196,0.5);
+    letter-spacing:1px; margin-bottom:8px; gap:8px;
+  }
+  .entry .tag{
+    font-size:10.5px; padding:3px 10px; border-radius:20px; letter-spacing:1px; font-weight:700;
+  }
+  .entry h3{
+    font-family:'Song Myung',serif;
+    font-size:20px; color:var(--soul-pink); margin:0 0 8px;
+  }
+  .entry p{ font-size:14.5px; line-height:1.9; white-space:pre-wrap; margin:0 0 10px; color:rgba(242,233,238,0.92);}
+  .entry-images{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 12px; }
+  .entry-images img{
+    width:100px; height:100px; object-fit:cover; border:1px solid var(--line);
+    cursor:pointer; filter:saturate(0.92) contrast(1.05);
+  }
+  .entry .del{
+    position:absolute; top:14px; right:16px; background:none; box-shadow:none;
+    padding:2px 6px; font-size:11px; color:rgba(232,163,196,0.35); letter-spacing:1px;
+  }
+  .entry .del:hover{color:var(--curse-magenta); transform:none;}
+
+  .comments{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); display:flex; flex-direction:column; gap:10px; }
+  .comment{ display:flex; gap:10px; align-items:flex-start; }
+  .avatar{
+    flex:0 0 auto; width:32px; height:32px;
+    display:flex; align-items:center; justify-content:center;
+    filter:drop-shadow(0 0 6px rgba(0,0,0,0.5));
+  }
+  .comment .body{flex:1;}
+  .comment .name{font-family:'Nanum Myeongjo',serif; font-size:12px; letter-spacing:1px; margin-bottom:2px;}
+  .comment .text{font-size:13.5px; line-height:1.7; color:rgba(242,233,238,0.85);}
+
+  .empty{
+    text-align:center; padding:50px 20px; color:rgba(232,163,196,0.4);
+    font-family:'Song Myung',serif; font-size:15px;
+  }
+  .loading{ text-align:center; padding:30px; color:rgba(232,163,196,0.4); font-size:13px; letter-spacing:2px;}
+  footer{ text-align:center; margin-top:50px; font-size:11px; letter-spacing:2px; color:rgba(232,163,196,0.25); }
+
+  .lightbox{
+    position:fixed; inset:0; background:rgba(5,3,8,0.9); display:none;
+    align-items:center; justify-content:center; z-index:50; padding:30px; cursor:zoom-out;
+  }
+  .lightbox.open{ display:flex; }
+  .lightbox img{ max-width:100%; max-height:100%; border:1px solid var(--line); }
+</style>
+</head>
+<body>
+<svg class="crack" style="top:0;left:0;" width="100%" height="220" viewBox="0 0 400 220" preserveAspectRatio="none">
+  <path d="M20,0 L45,40 L30,70 L60,110 L40,150" />
+  <path d="M380,10 L350,50 L370,90 L340,130" />
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="glyph">◈</div>
+    <div class="rune-title" title="마법소녀의 결계 일기">ᛗᚨᛒᛖᛟᛒᛊᛟᚾᛃᛖᛟᚢᛁ ᚷᛃᛖᛟᛚᚷᛃᛖ ᛁᛚᚷᛁ</div>
+    <div class="sub">Soul Gem Diary · 미타키하라</div>
+  </header>
+
+  <div class="divider"><span>오늘의 계약</span></div>
+
+  <div class="composer">
+    <div class="date-row">
+      <span class="today" id="today-label"></span>
+      <span class="count" id="entry-count"></span>
+    </div>
+
+    <div class="cat-row">
+      <div class="cat-label">카테고리</div>
+      <div class="cat-chips" id="composer-cat-chips"></div>
+      <div class="cat-add" style="margin-top:8px;">
+        <input type="text" id="new-cat-input" placeholder="새 카테고리..." maxlength="12" />
+        <button id="add-cat-btn" type="button">추가</button>
+      </div>
+    </div>
+
+    <input id="entry-title" type="text" placeholder="제목 없는 소원..." />
+    <textarea id="entry-body" placeholder="오늘 네 소울젬은 얼마나 흐려졌어? 무슨 일이 있었는지 적어봐..."></textarea>
+    <div class="image-row">
+      <label class="image-picker">
+        🪄 이미지 첨부
+        <input type="file" id="image-input" accept="image/*" multiple />
+      </label>
+      <div class="preview-strip" id="preview-strip"></div>
+    </div>
+    <div class="actions">
+      <button id="save-btn">봉인하기 ✦</button>
+    </div>
+  </div>
+
+  <div class="divider"><span>기록된 결계들</span></div>
+
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <div class="entries" id="entries-list">
+    <div class="loading">결계를 여는 중...</div>
+  </div>
+
+  <footer>이 일기는 어디서 열어도 지워지지 않아 — 소울젬처럼, 계속 남아있어</footer>
+</div>
+
+<div class="lightbox" id="lightbox"><img id="lightbox-img" src="" /></div>
+
+<script>
+const ENTRIES_KEY = 'madoka-diary:entries:hyeon';
+const CATS_KEY = 'madoka-diary:categories:hyeon';
+
+const SUPABASE_URL = 'https://hfbhteozrfpeephimjcq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_3mH662WDGEmdc2AkCWQDcQ_qPNypcLl';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const CAT_PALETTE = ['#e8a3c4','#7a3fc9','#2f9fd8','#f0b93a','#5fb4a8','#e5384f','#9ac93a','#c98fe8'];
+
+const CHARACTERS = [
+  { name: '마도카', color: '#ff8fc0', color2: '#fff0f6', textColor:'#3a1428',
+    lines: [
+      '괜찮아... 나는 항상 네 편이야. 무슨 일이 있어도.',
+      '혼자 짊어지지 마. 힘들면 힘들다고 말해도 돼.',
+      '오늘도 버텨줘서 고마워. 그것만으로도 충분해.',
+      '소원은... 신중하게 생각해야 해. 하지만 네 마음은 존중할게.',
+      '나였다면 무서웠을 것 같아. 근데 넌 잘 해내고 있어.'
+    ]},
+  { name: '호무라', color: '#7a3fc9', color2: '#2a1440', textColor:'#f4c9dc',
+    lines: [
+      '...몇 번을 되돌려도, 이 기록만은 남겨둘게.',
+      '방심하지 마. 세상은 생각보다 더 잔인하니까.',
+      '너를 지키기 위해서라면, 나는 몇 번이라도 반복할 수 있어.',
+      '감정에 휘둘리지 마. 냉정하게, 하지만... 잊지는 마.',
+      '이 페이지도 시간의 루프 속에서 몇 번째일까.'
+    ]},
+  { name: '사야카', color: '#2f9fd8', color2: '#bdeeff', textColor:'#08283a',
+    lines: [
+      '후회 없이 사는 거, 그게 제일 중요한 거 아니겠어?',
+      '누군가를 위해 싸운다는 거... 나쁘지 않은 것 같아.',
+      '오늘은 좀 힘들었나 보네. 나도 그런 날 있었어.',
+      '왜곡되지 마. 네가 믿는 걸 지켜.',
+      '흐린 소울젬... 나도 알아, 그 느낌.'
+    ]},
+  { name: '마미', color: '#f0b93a', color2: '#fff2c9', textColor:'#3a2600',
+    lines: [
+      '혼자가 아니야. 언제든 차 한 잔 마시러 와도 좋아, 후후.',
+      '마법소녀의 삶은 외로울 수 있지만, 그래도 품위는 잃지 말자.',
+      '오늘 하루도 수고했어요. 잘 쉬어요.',
+      '위험한 결계에 너무 깊이 들어가지 마. 조심해.',
+      '작은 행복도 소중히 여기는 게 중요해.'
+    ]},
+  { name: '쿄코', color: '#e5384f', color2: '#ffd3d3', textColor:'#3a0812',
+    lines: [
+      '뭐든 배 채우는 게 우선이지. 밥은 먹었어?',
+      '남을 너무 믿지 마... 라고 말하고 싶지만, 너는 좀 믿어도 될 것 같아.',
+      '살아남는 게 최우선이야. 잊지 마.',
+      '흥, 약한 소리 하지 말고 그냥 다 쏟아내 봐.',
+      '오늘도 살아있으면 그걸로 됐어.'
+    ]},
+  { name: '큐베', color: '#c9d8dc', color2: '#4a2f6b', textColor:'#1a0f28',
+    lines: [
+      '흥미로운 감정 데이터로군. 계속 기록해줘.',
+      '계약할 생각은... 없는 거지? 언제든 말해줘.',
+      '감정의 기복은 에너지 효율이 떨어져. 그래도 기록은 유용해.',
+      '너의 소원은 무엇이지? 참고삼아 물어보는 거야.',
+      '인간의 감정이란 정말 비효율적이면서도 흥미로워.'
+    ]}
+];
+
+let gemUid = 0;
+function gemSVG(color1, color2){
+  const id = 'gemgrad' + (gemUid++);
+  return `
+  <svg viewBox="0 0 40 40" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${color2}" />
+        <stop offset="100%" stop-color="${color1}" />
+      </linearGradient>
+    </defs>
+    <polygon points="20,2 32,14 26,36 14,36 8,14" fill="url(#${id})" stroke="rgba(0,0,0,0.35)" stroke-width="0.7"/>
+    <polygon points="20,2 32,14 20,17 8,14" fill="#ffffff" opacity="0.35"/>
+    <polygon points="20,17 32,14 26,36 20,30" fill="#000000" opacity="0.12"/>
+    <polygon points="16,10 22,8 20,16 14,15" fill="#ffffff" opacity="0.55"/>
+  </svg>`;
+}
+
+function pickComments(){
+  const shuffled = [...CHARACTERS].sort(()=>Math.random()-0.5);
+  const n = Math.random() < 0.5 ? 1 : 2;
+  return shuffled.slice(0,n).map(c => ({
+    name: c.name, color: c.color, color2: c.color2, textColor: c.textColor,
+    text: c.lines[Math.floor(Math.random()*c.lines.length)]
+  }));
+}
+
+function todayLabel(){
+  const d = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+}
+document.getElementById('today-label').textContent = todayLabel();
+
+let entries = [];
+let categories = [];
+let pendingImages = [];
+let selectedComposerCat = null;
+let activeFilter = 'ALL';
+
+async function loadAll(){
+  try{
+    const [entRes, catRes] = await Promise.all([
+      sb.from('entries').select('*').order('created_at', { ascending: true }),
+      sb.from('categories').select('*')
+    ]);
+    if(entRes.error) throw entRes.error;
+    if(catRes.error) throw catRes.error;
+    entries = entRes.data.map(rowToEntry);
+    categories = catRes.data.map(rowToCat);
+  }catch(e){
+    console.error('불러오기 오류:', e.message || e, e.details || '', e.hint || '', e.code || '');
+    entries = []; categories = [];
+    document.getElementById('entries-list').innerHTML =
+      '<div class="empty">결계 연결에 실패했어... Supabase 설정을 확인해줘.</div>';
+  }
+  if(categories.length === 0){
+    const seed = [
+      { id: 'cat_daily', name: '일상', color: CAT_PALETTE[0] },
+      { id: 'cat_novel', name: '소설 메모', color: CAT_PALETTE[1] }
+    ];
+    for(const cat of seed){
+      await sb.from('categories').insert(catToRow(cat));
+    }
+    categories = seed;
+  }
+  selectedComposerCat = categories[0] ? categories[0].id : null;
+  renderCatChips();
+  renderFilterBar();
+  render();
+}
+
+function rowToEntry(row){
+  return {
+    id: row.id,
+    title: row.title || '',
+    body: row.body || '',
+    date: row.date || '',
+    categoryId: row.category_id,
+    images: row.images || [],
+    comments: row.comments || []
+  };
+}
+function entryToRow(entry){
+  return {
+    id: entry.id,
+    title: entry.title,
+    body: entry.body,
+    date: entry.date,
+    category_id: entry.categoryId,
+    images: entry.images,
+    comments: entry.comments
+  };
+}
+function rowToCat(row){
+  return { id: row.id, name: row.name, color: row.color };
+}
+function catToRow(cat){
+  return { id: cat.id, name: cat.name, color: cat.color };
+}
+
+async function persistEntries(){
+  /* no-op: entries are persisted individually via insert/delete */
+}
+async function persistCats(){
+  /* no-op: categories are persisted individually via insert/delete */
+}
+
+function catById(id){ return categories.find(c => c.id === id); }
+
+function renderCatChips(){
+  const wrap = document.getElementById('composer-cat-chips');
+  wrap.innerHTML = '';
+  categories.forEach(cat => {
+    const chip = document.createElement('span');
+    chip.className = 'cat-chip' + (selectedComposerCat === cat.id ? ' active' : '');
+    if(selectedComposerCat === cat.id){ chip.style.background = cat.color; }
+    chip.innerHTML = `${escapeHtml(cat.name)} <span class="rm-cat" data-id="${cat.id}">✕</span>`;
+    chip.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('rm-cat')) return;
+      selectedComposerCat = cat.id;
+      renderCatChips();
+    });
+    chip.querySelector('.rm-cat').addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if(!confirm(`"${cat.name}" 카테고리를 삭제할까? (기존 글의 태그는 남아있어)`)) return;
+      const { error } = await sb.from('categories').delete().eq('id', cat.id);
+      if(error){ console.error('카테고리 삭제 오류', error); return; }
+      categories = categories.filter(c => c.id !== cat.id);
+      if(selectedComposerCat === cat.id){ selectedComposerCat = categories[0] ? categories[0].id : null; }
+      renderCatChips();
+      renderFilterBar();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+function renderFilterBar(){
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = '';
+  const allChip = document.createElement('span');
+  allChip.className = 'cat-chip' + (activeFilter === 'ALL' ? ' active' : '');
+  if(activeFilter === 'ALL'){ allChip.style.background = 'var(--soul-pink)'; }
+  allChip.textContent = '전체';
+  allChip.addEventListener('click', ()=>{ activeFilter = 'ALL'; renderFilterBar(); render(); });
+  bar.appendChild(allChip);
+  categories.forEach(cat => {
+    const chip = document.createElement('span');
+    chip.className = 'cat-chip' + (activeFilter === cat.id ? ' active' : '');
+    if(activeFilter === cat.id){ chip.style.background = cat.color; }
+    chip.textContent = cat.name;
+    chip.addEventListener('click', ()=>{ activeFilter = cat.id; renderFilterBar(); render(); });
+    bar.appendChild(chip);
+  });
+}
+
+document.getElementById('add-cat-btn').addEventListener('click', async ()=>{
+  const input = document.getElementById('new-cat-input');
+  const name = input.value.trim();
+  if(!name) return;
+  const color = CAT_PALETTE[categories.length % CAT_PALETTE.length];
+  const cat = { id: 'cat_' + Date.now().toString(36), name, color };
+  const { error } = await sb.from('categories').insert(catToRow(cat));
+  if(error){ console.error('카테고리 추가 오류', error); return; }
+  categories.push(cat);
+  selectedComposerCat = cat.id;
+  input.value = '';
+  renderCatChips();
+  renderFilterBar();
+});
+document.getElementById('new-cat-input').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('add-cat-btn').click(); }
+});
+
+function render(){
+  const listEl = document.getElementById('entries-list');
+  const visible = activeFilter === 'ALL' ? entries : entries.filter(e => e.categoryId === activeFilter);
+  document.getElementById('entry-count').textContent = entries.length ? `총 ${entries.length}편의 기록` : '';
+  if(visible.length === 0){
+    listEl.innerHTML = '<div class="empty">아직 봉인된 소원이 없어... 첫 페이지를 남겨볼래?</div>';
+    return;
+  }
+  listEl.innerHTML = '';
+  [...visible].reverse().forEach(entry => {
+    const div = document.createElement('div');
+    div.className = 'entry';
+    const cat = catById(entry.categoryId);
+    const tagHtml = cat ? `<span class="tag" style="background:${cat.color};color:#1a0f1e;">${escapeHtml(cat.name)}</span>` : '';
+    if(cat){ div.style.borderLeftColor = cat.color; }
+    const imagesHtml = (entry.images && entry.images.length)
+      ? `<div class="entry-images">${entry.images.map(src => `<img src="${src}" data-full="${src}" />`).join('')}</div>`
+      : '';
+    const commentsHtml = entry.comments.map(c => `
+      <div class="comment">
+        <div class="avatar">${gemSVG(c.color, c.color2)}</div>
+        <div class="body">
+          <div class="name" style="color:${c.color};">${c.name}</div>
+          <div class="text">${escapeHtml(c.text)}</div>
+        </div>
+      </div>
+    `).join('');
+    div.innerHTML = `
+      <button class="del" data-id="${entry.id}">봉인 해제 ✕</button>
+      <div class="meta"><span>${entry.date}</span>${tagHtml}</div>
+      ${entry.title ? `<h3>${escapeHtml(entry.title)}</h3>` : ''}
+      <p>${escapeHtml(entry.body)}</p>
+      ${imagesHtml}
+      <div class="comments">${commentsHtml}</div>
+    `;
+    listEl.appendChild(div);
+  });
+  listEl.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.getAttribute('data-id');
+      const { error } = await sb.from('entries').delete().eq('id', id);
+      if(error){ console.error('삭제 오류', error); return; }
+      entries = entries.filter(e => e.id !== id);
+      render();
+    });
+  });
+  listEl.querySelectorAll('.entry-images img').forEach(img=>{
+    img.addEventListener('click', ()=>{
+      document.getElementById('lightbox-img').src = img.getAttribute('data-full');
+      document.getElementById('lightbox').classList.add('open');
+    });
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.getElementById('lightbox').addEventListener('click', ()=>{
+  document.getElementById('lightbox').classList.remove('open');
+});
+
+document.getElementById('image-input').addEventListener('change', (e)=>{
+  const files = Array.from(e.target.files || []);
+  files.forEach(file => {
+    if(!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingImages.push(reader.result);
+      renderPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+});
+
+function renderPreview(){
+  const strip = document.getElementById('preview-strip');
+  strip.innerHTML = '';
+  pendingImages.forEach((src, idx) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'preview-thumb';
+    thumb.innerHTML = `<img src="${src}" /><button class="rm" data-idx="${idx}">✕</button>`;
+    strip.appendChild(thumb);
+  });
+  strip.querySelectorAll('.rm').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.getAttribute('data-idx'), 10);
+      pendingImages.splice(idx,1);
+      renderPreview();
+    });
+  });
+}
+
+document.getElementById('save-btn').addEventListener('click', async ()=>{
+  const titleEl = document.getElementById('entry-title');
+  const bodyEl = document.getElementById('entry-body');
+  const body = bodyEl.value.trim();
+  if(!body && pendingImages.length === 0) return;
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = '봉인 중...';
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    title: titleEl.value.trim(),
+    body,
+    date: todayLabel(),
+    categoryId: selectedComposerCat,
+    images: [...pendingImages],
+    comments: pickComments()
+  };
+  const { error } = await sb.from('entries').insert(entryToRow(entry));
+  btn.disabled = false;
+  btn.textContent = '봉인하기 ✦';
+  if(error){
+    console.error('저장 오류:', error.message || error, error.details || '', error.hint || '', error.code || '');
+    alert('저장 실패: ' + (error.message || JSON.stringify(error)));
+    return;
+  }
+  entries.push(entry);
+  titleEl.value = '';
+  bodyEl.value = '';
+  pendingImages = [];
+  renderPreview();
+  render();
+});
+
+loadAll();
+</script>
+</body>
+</html>
